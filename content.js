@@ -19,6 +19,10 @@ function block() {
             for (let i = 0; i < filters.length; i++) {
                 if (url.includes(filters[i]) || title.includes(filters[i])) {
                     blockByFilter = true;
+                    console.log(
+                        `%c${'CONTENT BLOCKED BY KEYWORD : ' + filters[i]}`,
+                        'background: #FFFF00; color: #000000',
+                    );
                     break;
                 }
             }
@@ -38,8 +42,10 @@ function activateBlock() {
     if (JSON.parse(localStorage.getItem('blockThisSite'))) {
         localStorage.setItem('blockThisSite', false);
         window.location.reload();
+        console.log(`%c${'DOMAIN BLOCKED'}`, 'background: #00FF00; color: #FFFFFF');
     } else {
         localStorage.setItem('blockThisSite', true);
         block();
+        console.log(`%c${'DOMAIN BLOCKED'}`, 'background: #FF0000; color: #FFFFFF');
     }
 }
