@@ -1,22 +1,16 @@
 {
-    "name": "Website Blocker",
-    "description": "Block websites at ease.",
-    "action": {},
-    "manifest_version": 3,
-    "author": "voidrlm",
-    "version": "0.1",
-    "permissions": ["scripting", "activeTab"],
-    "background": {
-        "service_worker": "background.js",
-        "type": "module"
-    },
-    "icons": {
-        "48": "icon.png"
-    },
-    "content_scripts": [
-        {
-            "matches": ["<all_urls>"],
-            "js": ["content.js"]
-        }
-    ]
+  "name": "Website Blocker",
+  "description": "Block websites at ease.",
+  "action": {},
+  "manifest_version": 3,
+  "author": "voidrlm",
+  "version": "0.1",
+  "permissions": ["declarativeNetRequest", "storage", "activeTab"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "icons": {
+    "48": "icon.png"
+  }
 }
