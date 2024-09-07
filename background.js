@@ -3,10 +3,8 @@ chrome.action.onClicked.addListener((tab) => {
   const domain = url.hostname;
   chrome.storage.local.get({ blockedDomains: [] }, (result) => {
     const blockedDomains = result.blockedDomains;
-    console.log(blockedDomains);
     if (!blockedDomains.includes(domain)) {
       blockedDomains.push(domain);
-
       chrome.storage.local.set({ blockedDomains }, () => {
         updateBlockRules(blockedDomains, tab.id);
       });
@@ -41,21 +39,7 @@ function updateBlockRules(blockedDomains, tabId) {
         action: { type: "block" },
         condition: {
           urlFilter: `*://${domain}/*`,
-          resourceTypes: [
-            "main_frame",
-            "sub_frame",
-            "script",
-            "image",
-            "stylesheet",
-            "object",
-            "xmlhttprequest",
-            "ping",
-            "csp_report",
-            "media",
-            "font",
-            "websocket",
-            "other",
-          ],
+          resourceTypes: ["main_frame"],
         },
       }));
 
@@ -68,7 +52,6 @@ function updateBlockRules(blockedDomains, tabId) {
             console.error("Error adding rules: ", chrome.runtime.lastError);
             return;
           }
-
           // Force reload the tab to apply the block
           if (tabId) {
             chrome.tabs.reload(tabId);
