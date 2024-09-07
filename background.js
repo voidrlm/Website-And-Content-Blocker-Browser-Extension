@@ -60,9 +60,10 @@ function updateBlockRules(blockedDomains, tabId) {
       );
     }
   );
+  console.log("WEBSITE BLOCKER READY");
 }
 
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onStartup.addListener(() => {
   chrome.storage.local.get({ blockedDomains: [] }, (result) => {
     updateBlockRules(result.blockedDomains);
   });
