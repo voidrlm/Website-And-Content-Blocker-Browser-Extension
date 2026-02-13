@@ -23,14 +23,14 @@ function isDomainBlocked(url) {
   }
 }
 
-function isUrlKeywordBlocked(url) {
-  if (blockedKeywords.length === 0) return false;
-  const lower = url.toLowerCase();
+function containsBlockedKeyword(text) {
+  if (blockedKeywords.length === 0 || !text) return false;
+  const lower = text.toLowerCase();
   return blockedKeywords.some((kw) => lower.includes(kw.toLowerCase()));
 }
 
-function isBlocked(url) {
-  return isDomainBlocked(url) || isUrlKeywordBlocked(url);
+function isBlocked(url, title) {
+  return isDomainBlocked(url) || containsBlockedKeyword(url) || containsBlockedKeyword(title);
 }
 
 function hideBlockedResults() {
@@ -40,7 +40,7 @@ function hideBlockedResults() {
   const links = document.querySelectorAll("a[href]");
 
   for (const link of links) {
-    if (!isBlocked(link.href)) continue;
+    if (!isBlocked(link.href, link.textContent)) continue;
 
     // Walk up to find the search result container to hide the whole card
     let el = link;
