@@ -12,6 +12,27 @@
     "service_worker": "background.js",
     "type": "module"
   },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.google.com/*",
+        "*://*.google.co.in/*",
+        "*://*.google.co.uk/*",
+        "*://*.google.co.jp/*",
+        "*://*.google.co.za/*",
+        "*://*.google.co.kr/*",
+        "*://*.google.com.au/*",
+        "*://*.google.com.br/*",
+        "*://*.google.ca/*",
+        "*://*.google.de/*",
+        "*://*.google.fr/*",
+        "*://*.bing.com/*",
+        "*://*.duckduckgo.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
   "icons": {
     "48": "icon.png"
   }
