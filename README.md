@@ -4,7 +4,7 @@ Block distracting websites and unwanted content with ease.
 
 ## Features
 
-- **Block websites by domain**: Add domains to your block list to prevent access.
+- **Block websites by domain (root-level)**: Add domains to your block list to prevent any content from those domains from loading anywhere—this includes blocking them in search results, Google Images, and other embedded content. Blocked domains are stopped at the network level, so they won't appear or load in any part of the browser.
 - **Block by keyword**: Hide search results and links containing specific keywords.
 - **One-click blocking**: Instantly block the current website from the popup.
 - **SafeSearch enforcement**: Optionally force SafeSearch on supported search engines (Google, Bing, DuckDuckGo).
