@@ -1,6 +1,6 @@
 {
-  "name": "Website Blocker",
-  "description": "Block websites at ease.",
+  "name": "BrowseFocused",
+  "description": "Stay focused by blocking distracting websites and unwanted content at the root level.",
   "action": {
     "default_popup": "popup.html"
   },
