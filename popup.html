@@ -52,7 +52,7 @@
     /* Add domains input area */
     .add-area { display: flex; gap: 8px; }
 
-    #domain-input {
+    .add-area input {
       flex: 1;
       padding: 8px 10px;
       border: 1.5px solid #dee2e6;
@@ -60,9 +60,9 @@
       font-size: 13px;
       outline: none;
     }
-    #domain-input:focus { border-color: #dc3545; }
+    .add-area input:focus { border-color: #dc3545; }
 
-    #add-btn {
+    .add-area button {
       padding: 8px 14px;
       background: #dc3545;
       color: #fff;
@@ -73,7 +73,7 @@
       cursor: pointer;
       white-space: nowrap;
     }
-    #add-btn:hover { background: #c82333; }
+    .add-area button:hover { background: #c82333; }
 
     .hint {
       font-size: 11px;
@@ -81,7 +81,7 @@
       margin-top: 4px;
     }
 
-    /* Domain list */
+    /* Domain / keyword list */
     .list-header {
       font-size: 12px;
       font-weight: 600;
@@ -91,12 +91,12 @@
       margin-bottom: 8px;
     }
 
-    #domain-list {
-      max-height: 240px;
+    #domain-list, #keyword-list {
+      max-height: 180px;
       overflow-y: auto;
     }
 
-    .domain-item {
+    .domain-item, .keyword-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -106,7 +106,7 @@
       margin-bottom: 4px;
     }
 
-    .domain-item span {
+    .domain-item span, .keyword-item span {
       font-size: 13px;
       word-break: break-all;
     }
@@ -171,8 +171,25 @@
   <hr>
 
   <div class="section">
+    <div class="add-area">
+      <input id="keyword-input" type="text" placeholder="e.g. gambling, clickbait">
+      <button id="add-keyword-btn">Add</button>
+    </div>
+    <p class="hint">Block URLs containing these words</p>
+  </div>
+
+  <hr>
+
+  <div class="section">
     <div class="list-header">Blocked domains</div>
     <div id="domain-list"></div>
+  </div>
+
+  <hr>
+
+  <div class="section">
+    <div class="list-header">Blocked keywords</div>
+    <div id="keyword-list"></div>
   </div>
 
   <hr>
