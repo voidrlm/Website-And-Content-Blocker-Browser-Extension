@@ -1,4 +1,13 @@
-const RESOURCE_TYPES = ["main_frame", "sub_frame"];
+const RESOURCE_TYPES = [
+  "main_frame",
+  "sub_frame",
+  "image",
+  "media",
+  "script",
+  "stylesheet",
+  "xmlhttprequest",
+  "other",
+];
 
 /** In-memory Set for O(1) lookups — rebuilt when service worker restarts */
 let blockedSet = null;
