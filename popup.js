@@ -96,8 +96,47 @@ async function toggleCurrent() {
   updateCurrentBtn(domains);
 }
 
+// --- Import / Export ---
+
+const importBtn = document.getElementById("import-btn");
+const exportBtn = document.getElementById("export-btn");
+const importFile = document.getElementById("import-file");
+
+function exportList() {
+  sendMessage({ type: "getDomains" }).then(({ domains }) => {
+    const text = domains.sort().join("\n");
+    const blob = new Blob([text], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "blocked-domains.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
+
+function importList() {
+  importFile.click();
+}
+
+importFile.addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const text = await file.text();
+  const newDomains = parseDomains(text);
+  if (newDomains.length === 0) return;
+
+  const { domains } = await sendMessage({ type: "addDomains", domains: newDomains });
+  renderList(domains);
+  updateCurrentBtn(domains);
+  importFile.value = "";
+});
+
 // --- Init ---
 
+importBtn.addEventListener("click", importList);
+exportBtn.addEventListener("click", exportList);
 addBtn.addEventListener("click", addDomains);
 domainInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") addDomains();

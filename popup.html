@@ -130,6 +130,22 @@
     }
 
     hr { border: none; border-top: 1px solid #eee; }
+
+    /* Import / Export */
+    .io-area { display: flex; gap: 8px; }
+
+    .io-btn {
+      flex: 1;
+      padding: 8px;
+      border: 1.5px solid #dee2e6;
+      border-radius: 6px;
+      background: #fff;
+      color: #333;
+      font-weight: 600;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .io-btn:hover { background: #e9ecef; }
   </style>
 </head>
 <body>
@@ -158,6 +174,16 @@
     <div class="list-header">Blocked domains</div>
     <div id="domain-list"></div>
   </div>
+
+  <hr>
+
+  <div class="section">
+    <div class="io-area">
+      <button id="import-btn" class="io-btn">Import list</button>
+      <button id="export-btn" class="io-btn">Export list</button>
+    </div>
+  </div>
+  <input type="file" id="import-file" accept=".txt,.json,.csv" hidden>
 
   <script src="popup.js"></script>
 </body>
