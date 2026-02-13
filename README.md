@@ -1,6 +1,6 @@
-# Website & Content Blocker Browser Extension
+# BrowseFocused
 
-Block distracting websites and unwanted content with ease.
+Stay focused by blocking distracting websites and unwanted content at the root level.
 
 ## Features
 
