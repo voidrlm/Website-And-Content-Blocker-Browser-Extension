@@ -13,30 +13,44 @@ async function getBlockedSet() {
   return blockedSet;
 }
 
-// Toggle block/unblock on icon click
-chrome.action.onClicked.addListener(async (tab) => {
-  try {
-    const domain = new URL(tab.url).hostname;
+/** Persist the current set to storage and re-apply rules. Returns the domain array. */
+async function syncAndApply() {
+  const set = await getBlockedSet();
+  const domains = [...set];
+  await chrome.storage.local.set({ blockedDomains: domains });
+  await applyRules(domains);
+  return domains;
+}
+
+// Handle messages from the popup
+chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  (async () => {
     const set = await getBlockedSet();
-    const nowBlocked = !set.has(domain);
 
-    if (nowBlocked) {
-      set.add(domain);
-    } else {
-      set.delete(domain);
+    switch (msg.type) {
+      case "getDomains":
+        return { domains: [...set] };
+
+      case "addDomains":
+        for (const d of msg.domains) set.add(d);
+        return { domains: await syncAndApply() };
+
+      case "removeDomain":
+        set.delete(msg.domain);
+        return { domains: await syncAndApply() };
+
+      case "toggleDomain": {
+        if (set.has(msg.domain)) set.delete(msg.domain);
+        else set.add(msg.domain);
+        return { domains: await syncAndApply() };
+      }
+
+      default:
+        return {};
     }
+  })().then(sendResponse);
 
-    const domains = [...set];
-    await chrome.storage.local.set({ blockedDomains: domains });
-    await applyRules(domains);
-
-    // Only force-reload when blocking — don't disrupt user when unblocking
-    if (nowBlocked && tab.id) {
-      chrome.tabs.reload(tab.id);
-    }
-  } catch (e) {
-    console.error("Toggle block failed:", e);
-  }
+  return true; // keep the message channel open for async response
 });
 
 /**
