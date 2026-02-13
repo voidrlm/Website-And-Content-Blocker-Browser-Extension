@@ -87,6 +87,21 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         kSet.clear();
         return await syncAndApply();
 
+      case "hasPassword": {
+        const { passwordHash } = await chrome.storage.local.get({ passwordHash: null });
+        return { hasPassword: !!passwordHash };
+      }
+
+      case "setPassword": {
+        await chrome.storage.local.set({ passwordHash: msg.hash });
+        return { ok: true };
+      }
+
+      case "checkPassword": {
+        const { passwordHash: stored } = await chrome.storage.local.get({ passwordHash: null });
+        return { match: stored === msg.hash };
+      }
+
       default:
         return {};
     }

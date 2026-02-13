@@ -24,6 +24,12 @@
 
     header h1 { font-size: 16px; font-weight: 600; }
 
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     #count {
       background: rgba(255,255,255,.2);
       border-radius: 12px;
@@ -31,7 +37,69 @@
       font-size: 12px;
     }
 
+    #lock-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0 2px;
+      line-height: 1;
+      display: none;
+    }
+    #lock-btn:hover { opacity: .8; }
+
     .section { padding: 12px 16px; }
+
+    /* Lock screen */
+    #lock-screen {
+      padding: 32px 16px;
+      text-align: center;
+    }
+
+    #lock-screen .lock-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+
+    #lock-screen p {
+      color: #666;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    #lock-screen .add-area {
+      justify-content: center;
+    }
+
+    #lock-screen input {
+      flex: 1;
+      max-width: 180px;
+      padding: 8px 10px;
+      border: 1.5px solid #dee2e6;
+      border-radius: 6px;
+      font-size: 13px;
+      outline: none;
+    }
+    #lock-screen input:focus { border-color: #dc3545; }
+
+    #lock-screen button {
+      padding: 8px 14px;
+      background: #dc3545;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    #lock-screen button:hover { background: #c82333; }
+
+    #lock-error {
+      color: #dc3545;
+      font-size: 12px;
+      margin-top: 8px;
+    }
 
     /* Block current site */
     #block-current-btn {
@@ -146,61 +214,81 @@
       cursor: pointer;
     }
     .io-btn:hover { background: #e9ecef; }
+
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
   <header>
     <h1>Website Blocker</h1>
-    <span id="count">0</span>
+    <div class="header-right">
+      <span id="count">0</span>
+      <button id="lock-btn" title="Lock">&#x1F512;</button>
+    </div>
   </header>
 
-  <div class="section">
-    <button id="block-current-btn">Block this site</button>
-  </div>
-
-  <hr>
-
-  <div class="section">
+  <!-- Lock screen -->
+  <div id="lock-screen">
+    <div class="lock-icon">&#x1F512;</div>
+    <p id="lock-prompt">Enter password to unlock</p>
     <div class="add-area">
-      <input id="domain-input" type="text" placeholder="e.g. facebook.com, tiktok.com">
-      <button id="add-btn">Add</button>
+      <input id="password-input" type="password" placeholder="Password">
+      <button id="password-btn">Unlock</button>
     </div>
-    <p class="hint">Separate multiple domains with commas</p>
+    <div id="lock-error"></div>
   </div>
 
-  <hr>
-
-  <div class="section">
-    <div class="add-area">
-      <input id="keyword-input" type="text" placeholder="e.g. gambling, clickbait">
-      <button id="add-keyword-btn">Add</button>
+  <!-- Protected content -->
+  <div id="protected-content" class="hidden">
+    <div class="section">
+      <button id="block-current-btn">Block this site</button>
     </div>
-    <p class="hint">Block URLs containing these words</p>
-  </div>
 
-  <hr>
+    <hr>
 
-  <div class="section">
-    <div class="list-header">Blocked domains</div>
-    <div id="domain-list"></div>
-  </div>
+    <div class="section">
+      <div class="add-area">
+        <input id="domain-input" type="text" placeholder="e.g. facebook.com, tiktok.com">
+        <button id="add-btn">Add</button>
+      </div>
+      <p class="hint">Separate multiple domains with commas</p>
+    </div>
 
-  <hr>
+    <hr>
 
-  <div class="section">
-    <div class="list-header">Blocked keywords</div>
-    <div id="keyword-list"></div>
-  </div>
+    <div class="section">
+      <div class="add-area">
+        <input id="keyword-input" type="text" placeholder="e.g. gambling, clickbait">
+        <button id="add-keyword-btn">Add</button>
+      </div>
+      <p class="hint">Block URLs containing these words</p>
+    </div>
 
-  <hr>
+    <hr>
 
-  <div class="section">
-    <div class="io-area">
-      <button id="import-btn" class="io-btn">Import list</button>
-      <button id="export-btn" class="io-btn">Export list</button>
-      <button id="clear-btn" class="io-btn" style="color:#dc3545">Clear all</button>
+    <div class="section">
+      <div class="list-header">Blocked domains</div>
+      <div id="domain-list"></div>
+    </div>
+
+    <hr>
+
+    <div class="section">
+      <div class="list-header">Blocked keywords</div>
+      <div id="keyword-list"></div>
+    </div>
+
+    <hr>
+
+    <div class="section">
+      <div class="io-area">
+        <button id="import-btn" class="io-btn">Import list</button>
+        <button id="export-btn" class="io-btn">Export list</button>
+        <button id="clear-btn" class="io-btn" style="color:#dc3545">Clear all</button>
+      </div>
     </div>
   </div>
+
   <input type="file" id="import-file" accept=".txt,.json,.csv" hidden>
 
   <script src="popup.js"></script>

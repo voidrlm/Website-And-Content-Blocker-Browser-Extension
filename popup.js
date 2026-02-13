@@ -8,9 +8,91 @@ const keywordList = document.getElementById("keyword-list");
 const keywordInput = document.getElementById("keyword-input");
 const addKeywordBtn = document.getElementById("add-keyword-btn");
 
+const lockScreen = document.getElementById("lock-screen");
+const protectedContent = document.getElementById("protected-content");
+const lockBtn = document.getElementById("lock-btn");
+const passwordInput = document.getElementById("password-input");
+const passwordBtn = document.getElementById("password-btn");
+const lockPrompt = document.getElementById("lock-prompt");
+const lockError = document.getElementById("lock-error");
+
 let currentDomain = null;
 let cachedDomains = [];
 let cachedKeywords = [];
+let isSetup = false; // true = no password set yet, need to create one
+
+// --- Password hashing ---
+
+async function hashPassword(password) {
+  const data = new TextEncoder().encode(password);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// --- Lock / Unlock ---
+
+async function initLock() {
+  const { hasPassword } = await sendMessage({ type: "hasPassword" });
+  if (!hasPassword) {
+    isSetup = true;
+    lockPrompt.textContent = "Set a password to protect your lists";
+    passwordBtn.textContent = "Set password";
+    passwordInput.placeholder = "Create password";
+  } else {
+    isSetup = false;
+    lockPrompt.textContent = "Enter password to unlock";
+    passwordBtn.textContent = "Unlock";
+    passwordInput.placeholder = "Password";
+  }
+  lockScreen.classList.remove("hidden");
+  protectedContent.classList.add("hidden");
+  lockBtn.style.display = "none";
+  passwordInput.focus();
+}
+
+async function handlePassword() {
+  const pw = passwordInput.value;
+  if (!pw) return;
+
+  lockError.textContent = "";
+  const hash = await hashPassword(pw);
+
+  if (isSetup) {
+    await sendMessage({ type: "setPassword", hash });
+    unlock();
+  } else {
+    const { match } = await sendMessage({ type: "checkPassword", hash });
+    if (match) {
+      unlock();
+    } else {
+      lockError.textContent = "Wrong password";
+      passwordInput.value = "";
+      passwordInput.focus();
+    }
+  }
+}
+
+function unlock() {
+  passwordInput.value = "";
+  lockError.textContent = "";
+  lockScreen.classList.add("hidden");
+  protectedContent.classList.remove("hidden");
+  lockBtn.style.display = "block";
+  loadDomains();
+  loadKeywords();
+}
+
+function lock() {
+  protectedContent.classList.add("hidden");
+  lockBtn.style.display = "none";
+  isSetup = false;
+  lockPrompt.textContent = "Enter password to unlock";
+  passwordBtn.textContent = "Unlock";
+  passwordInput.placeholder = "Password";
+  lockScreen.classList.remove("hidden");
+  passwordInput.focus();
+}
 
 // --- Helpers ---
 
@@ -257,14 +339,18 @@ keywordInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") addKeywords();
 });
 blockCurrentBtn.addEventListener("click", toggleCurrent);
+lockBtn.addEventListener("click", lock);
+passwordBtn.addEventListener("click", handlePassword);
+passwordInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") handlePassword();
+});
 
-// Get current tab domain, then load everything
+// Get current tab domain, then show lock screen
 chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
   try {
     if (tabs[0]?.url) {
       currentDomain = new URL(tabs[0].url).hostname;
     }
   } catch {}
-  loadDomains();
-  loadKeywords();
+  initLock();
 });
