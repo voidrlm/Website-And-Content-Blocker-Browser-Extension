@@ -176,6 +176,7 @@ async function toggleCurrent() {
 
 const importBtn = document.getElementById("import-btn");
 const exportBtn = document.getElementById("export-btn");
+const clearBtn = document.getElementById("clear-btn");
 const importFile = document.getElementById("import-file");
 
 function exportList() {
@@ -200,6 +201,14 @@ function exportList() {
 
 function importList() {
   importFile.click();
+}
+
+async function clearAll() {
+  if (!confirm("Remove all blocked domains and keywords?")) return;
+  const { domains, keywords } = await sendMessage({ type: "clearAll" });
+  renderDomainList(domains);
+  renderKeywordList(keywords);
+  updateCurrentBtn(domains);
 }
 
 importFile.addEventListener("change", async (e) => {
@@ -238,6 +247,7 @@ importFile.addEventListener("change", async (e) => {
 
 importBtn.addEventListener("click", importList);
 exportBtn.addEventListener("click", exportList);
+clearBtn.addEventListener("click", clearAll);
 addBtn.addEventListener("click", addDomains);
 domainInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") addDomains();

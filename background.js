@@ -82,6 +82,11 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         kSet.delete(msg.keyword);
         return await syncAndApply();
 
+      case "clearAll":
+        set.clear();
+        kSet.clear();
+        return await syncAndApply();
+
       default:
         return {};
     }
