@@ -1,18 +1,46 @@
-# Website Blocker Browser Extension
-Blocks websites at ease
+# Website & Content Blocker Browser Extension
 
-Features:
+Block distracting websites and unwanted content with ease.
 
-1)On click of icon block a website
+## Features
 
-2)Block websites by domain filtering
+- **Block websites by domain**: Add domains to your block list to prevent access.
+- **Block by keyword**: Hide search results and links containing specific keywords.
+- **One-click blocking**: Instantly block the current website from the popup.
+- **SafeSearch enforcement**: Optionally force SafeSearch on supported search engines (Google, Bing, DuckDuckGo).
+- **Password protection**: Lock the extension settings with a password to prevent tampering.
+- **Persistent storage**: All settings are saved locally in your browser.
 
-How to install:
+## How to Install
 
-1)Open your Chrome browser and go to Extensions page.
+1. Download or clone this repository and extract the folder.
+2. Open Chrome and go to `chrome://extensions/`.
+3. Enable **Developer mode** (toggle in the top right).
+4. Click **Load unpacked** and select the extracted folder.
+5. The extension icon will appear in your browser toolbar.
 
-2)Make sure the Developer Mode is enabled.
+## Usage
 
-3)Click the Load upacked button.
+1. Click the extension icon to open the popup.
+2. Add domains or keywords to block.
+3. Use the **Block Current Site** button to quickly block the active tab's domain.
+4. Toggle SafeSearch enforcement as needed.
+5. (Optional) Set a password to lock the extension settings.
 
-4)Select and upload the extracted folder.
+## Permissions
+
+This extension requests the following permissions:
+
+- `declarativeNetRequest`: To block network requests to specified domains.
+- `storage`: To save your block lists and settings.
+- `activeTab`: To interact with the current tab for one-click blocking.
+
+## Supported Search Engines
+
+- Google
+- Bing
+- DuckDuckGo
+
+## License
+
+See [LICENSE](LICENSE) for details.
