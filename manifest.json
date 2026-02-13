@@ -1,7 +1,9 @@
 {
   "name": "Website Blocker",
   "description": "Block websites at ease.",
-  "action": {},
+  "action": {
+    "default_popup": "popup.html"
+  },
   "manifest_version": 3,
   "author": "voidrlm",
   "version": "0.1",
