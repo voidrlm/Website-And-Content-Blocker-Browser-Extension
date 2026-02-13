@@ -9,8 +9,11 @@ const RESOURCE_TYPES = [
   "other",
 ];
 
+const KEYWORD_RULE_ID_OFFSET = 10000;
+
 /** In-memory Set for O(1) lookups — rebuilt when service worker restarts */
 let blockedSet = null;
+let keywordSet = null;
 
 async function getBlockedSet() {
   if (!blockedSet) {
@@ -22,19 +25,33 @@ async function getBlockedSet() {
   return blockedSet;
 }
 
-/** Persist the current set to storage and re-apply rules. Returns the domain array. */
+async function getKeywordSet() {
+  if (!keywordSet) {
+    const { blockedKeywords } = await chrome.storage.local.get({
+      blockedKeywords: [],
+    });
+    keywordSet = new Set(blockedKeywords);
+  }
+  return keywordSet;
+}
+
+/** Persist the current sets to storage and re-apply rules. */
 async function syncAndApply() {
-  const set = await getBlockedSet();
-  const domains = [...set];
-  await chrome.storage.local.set({ blockedDomains: domains });
-  await applyRules(domains);
-  return domains;
+  const domainArr = [...(await getBlockedSet())];
+  const keywordArr = [...(await getKeywordSet())];
+  await chrome.storage.local.set({
+    blockedDomains: domainArr,
+    blockedKeywords: keywordArr,
+  });
+  await applyRules(domainArr, keywordArr);
+  return { domains: domainArr, keywords: keywordArr };
 }
 
 // Handle messages from the popup
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   (async () => {
     const set = await getBlockedSet();
+    const kSet = await getKeywordSet();
 
     switch (msg.type) {
       case "getDomains":
@@ -42,17 +59,28 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 
       case "addDomains":
         for (const d of msg.domains) set.add(d);
-        return { domains: await syncAndApply() };
+        return await syncAndApply();
 
       case "removeDomain":
         set.delete(msg.domain);
-        return { domains: await syncAndApply() };
+        return await syncAndApply();
 
       case "toggleDomain": {
         if (set.has(msg.domain)) set.delete(msg.domain);
         else set.add(msg.domain);
-        return { domains: await syncAndApply() };
+        return await syncAndApply();
       }
+
+      case "getKeywords":
+        return { keywords: [...kSet] };
+
+      case "addKeywords":
+        for (const k of msg.keywords) kSet.add(k);
+        return await syncAndApply();
+
+      case "removeKeyword":
+        kSet.delete(msg.keyword);
+        return await syncAndApply();
 
       default:
         return {};
@@ -63,15 +91,15 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 });
 
 /**
- * Applies declarativeNetRequest rules from the given domain list.
- * Uses a single atomic updateDynamicRules call (remove old + add new)
- * and requestDomains for Chrome-optimized domain matching.
+ * Applies declarativeNetRequest rules from the given domain and keyword lists.
+ * Domain rules: IDs 1..N using requestDomains
+ * Keyword rules: IDs 10001..10001+M using urlFilter
  */
-async function applyRules(domains) {
+async function applyRules(domains, keywords) {
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
   const removeRuleIds = existing.map((r) => r.id);
 
-  const addRules = domains.map((domain, i) => ({
+  const domainRules = domains.map((domain, i) => ({
     id: i + 1,
     priority: 1,
     action: { type: "block" },
@@ -81,17 +109,28 @@ async function applyRules(domains) {
     },
   }));
 
+  const keywordRules = keywords.map((keyword, i) => ({
+    id: KEYWORD_RULE_ID_OFFSET + i + 1,
+    priority: 1,
+    action: { type: "block" },
+    condition: {
+      urlFilter: `*${keyword}*`,
+      resourceTypes: RESOURCE_TYPES,
+    },
+  }));
+
   // Single atomic call — no gap where rules are missing
   await chrome.declarativeNetRequest.updateDynamicRules({
     removeRuleIds,
-    addRules,
+    addRules: [...domainRules, ...keywordRules],
   });
 }
 
 // Initialize on browser start AND extension install/update
 async function init() {
-  const set = await getBlockedSet();
-  await applyRules([...set]);
+  const domains = [...(await getBlockedSet())];
+  const keywords = [...(await getKeywordSet())];
+  await applyRules(domains, keywords);
 
   // Show blocked-request count as badge text (zero cost, handled by Chrome)
   chrome.declarativeNetRequest.setExtensionActionOptions({

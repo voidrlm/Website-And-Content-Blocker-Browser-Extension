@@ -1,12 +1,15 @@
-/** Content script — hides search results that link to blocked domains */
+/** Content script — hides search results that link to blocked domains or match keywords */
 
 let blockedDomains = [];
+let blockedKeywords = [];
 
 async function loadBlockedDomains() {
-  const { blockedDomains: domains } = await chrome.storage.local.get({
+  const data = await chrome.storage.local.get({
     blockedDomains: [],
+    blockedKeywords: [],
   });
-  blockedDomains = domains;
+  blockedDomains = data.blockedDomains;
+  blockedKeywords = data.blockedKeywords;
 }
 
 function isDomainBlocked(url) {
@@ -20,14 +23,24 @@ function isDomainBlocked(url) {
   }
 }
 
+function isUrlKeywordBlocked(url) {
+  if (blockedKeywords.length === 0) return false;
+  const lower = url.toLowerCase();
+  return blockedKeywords.some((kw) => lower.includes(kw.toLowerCase()));
+}
+
+function isBlocked(url) {
+  return isDomainBlocked(url) || isUrlKeywordBlocked(url);
+}
+
 function hideBlockedResults() {
-  if (blockedDomains.length === 0) return;
+  if (blockedDomains.length === 0 && blockedKeywords.length === 0) return;
 
   // All links on the page — covers Google, Bing, DuckDuckGo
   const links = document.querySelectorAll("a[href]");
 
   for (const link of links) {
-    if (!isDomainBlocked(link.href)) continue;
+    if (!isBlocked(link.href)) continue;
 
     // Walk up to find the search result container to hide the whole card
     let el = link;
@@ -74,6 +87,11 @@ loadBlockedDomains().then(() => {
 chrome.storage.onChanged.addListener((changes) => {
   if (changes.blockedDomains) {
     blockedDomains = changes.blockedDomains.newValue || [];
+  }
+  if (changes.blockedKeywords) {
+    blockedKeywords = changes.blockedKeywords.newValue || [];
+  }
+  if (changes.blockedDomains || changes.blockedKeywords) {
     hideBlockedResults();
   }
 });
