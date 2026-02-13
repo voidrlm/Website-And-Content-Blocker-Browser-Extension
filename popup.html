@@ -215,6 +215,59 @@
     }
     .io-btn:hover { background: #e9ecef; }
 
+    /* Toggle switch */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .toggle-row span {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .toggle {
+      position: relative;
+      width: 40px;
+      height: 22px;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle .slider {
+      position: absolute;
+      inset: 0;
+      background: #ccc;
+      border-radius: 22px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    .toggle .slider::before {
+      content: "";
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      left: 3px;
+      bottom: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform .2s;
+    }
+
+    .toggle input:checked + .slider {
+      background: #28a745;
+    }
+
+    .toggle input:checked + .slider::before {
+      transform: translateX(18px);
+    }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -242,6 +295,18 @@
   <div id="protected-content" class="hidden">
     <div class="section">
       <button id="block-current-btn">Block this site</button>
+    </div>
+
+    <hr>
+
+    <div class="section">
+      <div class="toggle-row">
+        <span>Enforce SafeSearch</span>
+        <label class="toggle">
+          <input type="checkbox" id="safe-search-toggle">
+          <span class="slider"></span>
+        </label>
+      </div>
     </div>
 
     <hr>

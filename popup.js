@@ -16,6 +16,8 @@ const passwordBtn = document.getElementById("password-btn");
 const lockPrompt = document.getElementById("lock-prompt");
 const lockError = document.getElementById("lock-error");
 
+const safeSearchToggle = document.getElementById("safe-search-toggle");
+
 let currentDomain = null;
 let cachedDomains = [];
 let cachedKeywords = [];
@@ -81,6 +83,7 @@ function unlock() {
   lockBtn.style.display = "block";
   loadDomains();
   loadKeywords();
+  loadSafeSearch();
 }
 
 function lock() {
@@ -201,6 +204,11 @@ async function loadDomains() {
 async function loadKeywords() {
   const { keywords } = await sendMessage({ type: "getKeywords" });
   renderKeywordList(keywords);
+}
+
+async function loadSafeSearch() {
+  const { enabled } = await sendMessage({ type: "getSafeSearch" });
+  safeSearchToggle.checked = enabled;
 }
 
 async function addDomains() {
@@ -339,6 +347,9 @@ keywordInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") addKeywords();
 });
 blockCurrentBtn.addEventListener("click", toggleCurrent);
+safeSearchToggle.addEventListener("change", () => {
+  sendMessage({ type: "setSafeSearch", enabled: safeSearchToggle.checked });
+});
 lockBtn.addEventListener("click", lock);
 passwordBtn.addEventListener("click", handlePassword);
 passwordInput.addEventListener("keydown", (e) => {

@@ -10,6 +10,72 @@ const RESOURCE_TYPES = [
 ];
 
 const KEYWORD_RULE_ID_OFFSET = 10000;
+const SAFE_SEARCH_RULE_ID_START = 20001;
+
+const GOOGLE_DOMAINS = [
+  "google.com", "google.co.in", "google.co.uk", "google.co.jp",
+  "google.co.za", "google.co.kr", "google.com.au", "google.com.br",
+  "google.ca", "google.de", "google.fr",
+];
+
+const SAFE_SEARCH_RULES = [
+  {
+    id: SAFE_SEARCH_RULE_ID_START,
+    priority: 2,
+    action: {
+      type: "redirect",
+      redirect: {
+        transform: {
+          queryTransform: {
+            addOrReplaceParams: [{ key: "safe", value: "active" }],
+          },
+        },
+      },
+    },
+    condition: {
+      requestDomains: GOOGLE_DOMAINS,
+      urlFilter: "/search",
+      resourceTypes: ["main_frame"],
+    },
+  },
+  {
+    id: SAFE_SEARCH_RULE_ID_START + 1,
+    priority: 2,
+    action: {
+      type: "redirect",
+      redirect: {
+        transform: {
+          queryTransform: {
+            addOrReplaceParams: [{ key: "adlt", value: "strict" }],
+          },
+        },
+      },
+    },
+    condition: {
+      requestDomains: ["bing.com"],
+      urlFilter: "/search",
+      resourceTypes: ["main_frame"],
+    },
+  },
+  {
+    id: SAFE_SEARCH_RULE_ID_START + 2,
+    priority: 2,
+    action: {
+      type: "redirect",
+      redirect: {
+        transform: {
+          queryTransform: {
+            addOrReplaceParams: [{ key: "kp", value: "1" }],
+          },
+        },
+      },
+    },
+    condition: {
+      requestDomains: ["duckduckgo.com"],
+      resourceTypes: ["main_frame"],
+    },
+  },
+];
 
 /** In-memory Set for O(1) lookups — rebuilt when service worker restarts */
 let blockedSet = null;
@@ -102,6 +168,17 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         return { match: stored === msg.hash };
       }
 
+      case "getSafeSearch": {
+        const { safeSearchEnabled } = await chrome.storage.local.get({ safeSearchEnabled: false });
+        return { enabled: safeSearchEnabled };
+      }
+
+      case "setSafeSearch": {
+        await chrome.storage.local.set({ safeSearchEnabled: msg.enabled });
+        await applySafeSearchRules(msg.enabled);
+        return { enabled: msg.enabled };
+      }
+
       default:
         return {};
     }
@@ -146,11 +223,29 @@ async function applyRules(domains, keywords) {
   });
 }
 
+/** Add or remove safe search redirect rules. */
+async function applySafeSearchRules(enabled) {
+  const safeSearchIds = SAFE_SEARCH_RULES.map((r) => r.id);
+  if (enabled) {
+    await chrome.declarativeNetRequest.updateDynamicRules({
+      removeRuleIds: safeSearchIds,
+      addRules: SAFE_SEARCH_RULES,
+    });
+  } else {
+    await chrome.declarativeNetRequest.updateDynamicRules({
+      removeRuleIds: safeSearchIds,
+    });
+  }
+}
+
 // Initialize on browser start AND extension install/update
 async function init() {
   const domains = [...(await getBlockedSet())];
   const keywords = [...(await getKeywordSet())];
   await applyRules(domains, keywords);
+
+  const { safeSearchEnabled } = await chrome.storage.local.get({ safeSearchEnabled: false });
+  await applySafeSearchRules(safeSearchEnabled);
 
   // Show blocked-request count as badge text (zero cost, handled by Chrome)
   chrome.declarativeNetRequest.setExtensionActionOptions({
